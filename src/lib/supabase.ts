@@ -1,0 +1,40 @@
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+export interface Category {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  slug: string;
+  order_index: number;
+  created_at: string;
+}
+
+export interface LegalTopic {
+  id: string;
+  category_id: string;
+  title: string;
+  slug: string;
+  summary: string;
+  content: string;
+  tags: string[];
+  difficulty_level: string;
+  reading_time: number;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FAQ {
+  id: string;
+  category_id: string;
+  question: string;
+  answer: string;
+  order_index: number;
+  created_at: string;
+}
