@@ -33,14 +33,13 @@ function App() {
     setIsLoading(true);
 
     try {
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/legal-chatbot`;
+      // Pointing to your new local Python FastAPI backend
+      const apiUrl = 'http://localhost:8000/api/chat';
 
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'X-Client-Info': 'claw-chatbot',
         },
         body: JSON.stringify({
           messages: [
@@ -73,7 +72,7 @@ function App() {
       const errorMsg: Message = {
         id: (Date.now() + 1).toString(),
         content:
-          'Sorry, I encountered an error. Please check your connection and try again.',
+          'Sorry, I encountered an error. Make sure your Python backend is running on http://localhost:8000.',
         isUser: false,
         timestamp: new Date(),
       };
