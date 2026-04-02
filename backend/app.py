@@ -1,9 +1,4 @@
 # app.py
-import os
-
-# Get the API key from environment variables (we will set this in Render later)
-api_key = os.environ.get("GEMINI_API_KEY")
-genai.configure(api_key=api_key)
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -14,18 +9,19 @@ import os
 
 app = FastAPI()
 
-# Enable CORS so your React frontend (e.g., localhost:5173) can communicate with this API
+# Enable CORS so your React frontend can communicate with this API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace "*" with your frontend URL
+    allow_origins=["*"],  # In production, you can replace "*" with your Vercel URL later for tighter security
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Initialize Gemini API
-# Make sure to put your actual API key here or use environment variables
-genai.configure(api_key="AIzaSyDK-9G2I5bPXz6g6d5RWCzWv_ilL_9042U") 
+# Initialize Gemini API securely
+# This pulls the API key you set in Render's environment variables
+api_key = os.environ.get("GEMINI_API_KEY")
+genai.configure(api_key=api_key) 
 model = genai.GenerativeModel("gemini-2.0-flash")
 
 # Load embedding model and vector database (done once when server starts)
@@ -87,6 +83,5 @@ async def chat_endpoint(request: ChatRequest):
         print(f"Error generating response: {e}")
         return {"content": "Sorry, I encountered an error while processing your request."}
 
-# To run this server, install fastapi and uvicorn:
-# pip install fastapi uvicorn
-# Then run: uvicorn app:app --reload
+# To run this server locally during development:
+# uvicorn app:app --reload
