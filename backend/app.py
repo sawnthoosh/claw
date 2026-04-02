@@ -1,4 +1,9 @@
 # app.py
+import os
+
+# Get the API key from environment variables (we will set this in Render later)
+api_key = os.environ.get("GEMINI_API_KEY")
+genai.configure(api_key=api_key)
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
