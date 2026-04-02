@@ -12,34 +12,39 @@ app = FastAPI()
 # Enable CORS so your React frontend can communicate with this API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, you can replace "*" with your Vercel URL later for tighter security
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # Initialize Gemini API securely
-# This pulls the API key you set in Render's environment variables
 api_key = os.environ.get("GEMINI_API_KEY")
 genai.configure(api_key=api_key) 
 model = genai.GenerativeModel("gemini-2.0-flash")
 
-# Load embedding model and vector database (done once when server starts)
-print("Loading vector database...")
-try:
-    embedding = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
-    )
-    # Ensure this path points to where your constitution_vectors folder is located
-    db = FAISS.load_local(
-        "./constitution_vectors", 
-        embedding,
-        allow_dangerous_deserialization=True
-    )
-    print("Vector database loaded successfully!")
-except Exception as e:
-    print(f"Error loading vector database: {e}")
-    db = None
+# Set db to None initially so the server can start instantly
+db = None
+
+def get_db():
+    """Lazily load the database only when the first question is asked"""
+    global db
+    if db is None:
+        print("Loading vector database for the first time... This might take a minute.")
+        try:
+            # This is the heavy part that was causing the timeout
+            embedding = HuggingFaceEmbeddings(
+                model_name="sentence-transformers/all-MiniLM-L6-v2"
+            )
+            db = FAISS.load_local(
+                "./constitution_vectors", 
+                embedding,
+                allow_dangerous_deserialization=True
+            )
+            print("Vector database loaded successfully!")
+        except Exception as e:
+            print(f"Error loading vector database: {e}")
+    return db
 
 # Define the data structure expected from the frontend
 class Message(BaseModel):
@@ -51,15 +56,19 @@ class ChatRequest(BaseModel):
 
 @app.post("/api/chat")
 async def chat_endpoint(request: ChatRequest):
-    if not db:
-        return {"content": "Error: Vector database not loaded. Please check the server logs."}
+    # Load the DB here. It will take a minute on the VERY FIRST message, 
+    # but will be instant for all messages after that.
+    vector_db = get_db()
+    
+    if not vector_db:
+        return {"content": "Error: Vector database could not be loaded. Please check server logs."}
 
     # Extract the latest user message
     user_query = request.messages[-1].content
     
     try:
         # Perform Similarity Search
-        docs = db.similarity_search(user_query, k=3)
+        docs = vector_db.similarity_search(user_query, k=3)
         context = "\n".join([doc.page_content for doc in docs])
         
         # Create the prompt
@@ -82,6 +91,3 @@ async def chat_endpoint(request: ChatRequest):
     except Exception as e:
         print(f"Error generating response: {e}")
         return {"content": "Sorry, I encountered an error while processing your request."}
-
-# To run this server locally during development:
-# uvicorn app:app --reload
