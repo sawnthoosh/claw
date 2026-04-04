@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 Deno.serve(async (req) => {
-  // 1. Always say YES to CORS preflight checks
+  // 1. Instantly approve website connections (CORS)
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -16,30 +16,28 @@ Deno.serve(async (req) => {
     const { messages } = await req.json();
     const query = messages[messages.length - 1].content;
 
-    // 2. Get the Gemini Key
+    // 2. Grab the ONE key we actually care about
     const apiKey = Deno.env.get("GEMINI_API_KEY");
     
-    // IF THE KEY IS MISSING, SEND A MESSAGE TO THE CHAT UI (No 500 Error!)
     if (!apiKey) {
       return new Response(JSON.stringify({ 
-        content: "🚨 ERROR: I am missing my GEMINI_API_KEY. Please add it to the Supabase Edge Function Secrets!" 
+        content: "🚨 ERROR: Missing GEMINI_API_KEY in Supabase secrets." 
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // 3. Ask Gemini directly
+    // 3. Talk DIRECTLY to Google Gemini (No Pinecone, No HuggingFace)
     const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
         contents: [{ 
-            parts: [{ text: `You are CLAW, an expert AI legal assistant. Answer this legal query simply and professionally: \n\nQuery: ${query}` }] 
+            parts: [{ text: `You are CLAW, a highly intelligent and helpful AI legal assistant. Please answer the following user query clearly and professionally: \n\nUser Query: ${query}` }] 
         }] 
       }),
     });
 
     const geminiData = await geminiRes.json();
 
-    // IF GEMINI FAILS, SEND THE REASON TO THE CHAT UI
     if (geminiData.error) {
         return new Response(JSON.stringify({ 
             content: `🚨 GEMINI API ERROR: ${geminiData.error.message}` 
@@ -48,15 +46,14 @@ Deno.serve(async (req) => {
 
     const aiAnswer = geminiData.candidates[0].content.parts[0].text;
 
-    // 4. Send the successful answer back
+    // 4. Send the brilliant answer back to your website
     return new Response(JSON.stringify({ content: aiAnswer }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
 
   } catch (err: any) {
-    // IF THE CODE CRASHES, SEND THE REASON TO THE CHAT UI
     return new Response(JSON.stringify({ 
-        content: `🚨 FATAL CRASH: ${err.message}` 
+        content: `🚨 CRASH: ${err.message}` 
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
