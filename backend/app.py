@@ -3,7 +3,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from langchain_community.vectorstores import FAISS
-from langchain_huggingface import HuggingFaceEmbeddings
+# NEW: Using the cloud API instead of the heavy local model
+from langchain_community.embeddings import HuggingFaceInferenceAPIEmbeddings
 import google.generativeai as genai
 import os
 
@@ -30,12 +31,15 @@ def get_db():
     """Lazily load the database only when the first question is asked"""
     global db
     if db is None:
-        print("Loading vector database for the first time... This might take a minute.")
+        print("Loading vector database... Connecting to Hugging Face Cloud...")
         try:
-            # This is the heavy part that was causing the timeout
-            embedding = HuggingFaceEmbeddings(
+            # NEW LOGIC: Use HuggingFace servers to run the heavy AI model
+            hf_token = os.environ.get("HUGGINGFACE_API_KEY")
+            embedding = HuggingFaceInferenceAPIEmbeddings(
+                api_key=hf_token,
                 model_name="sentence-transformers/all-MiniLM-L6-v2"
             )
+            
             db = FAISS.load_local(
                 "./constitution_vectors", 
                 embedding,
