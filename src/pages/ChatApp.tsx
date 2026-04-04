@@ -21,7 +21,7 @@ const systemInstruction = `You are the Citizen Legal AI Assistant. When a user d
 
 Do not deviate from this format. Keep the language simple for an ordinary citizen to understand.`;
 
-const model = genAI?.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction });
+const model = genAI?.getGenerativeModel({ model: "gemini-3-flash-preview", systemInstruction });
 
 const FAQ_QUESTIONS = [
   "My landlord refuses to return my security deposit.",
