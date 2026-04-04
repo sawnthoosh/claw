@@ -34,7 +34,7 @@ function App() {
 
     try {
       // Pointing to your new local Python FastAPI backend
-      const apiUrl = 'http://localhost:8000/api/chat';
+     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/chat';
 
       const response = await fetch(apiUrl, {
         method: 'POST',
