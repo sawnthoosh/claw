@@ -3,6 +3,8 @@ import { ChatHeader } from './components/ChatHeader';
 import { ChatContainer } from './components/ChatContainer';
 import { ChatInput } from './components/ChatInput';
 import { InfoPanel } from './components/InfoPanel';
+import { LandingPage } from './components/LandingPage';
+import { LoginPage } from './components/LoginPage';
 
 interface Message {
   id: string;
@@ -11,7 +13,14 @@ interface Message {
   timestamp: Date;
 }
 
+// Define the three possible screens in our app
+type AppView = 'landing' | 'login' | 'chat';
+
 function App() {
+  // --- NEW STATE FOR NAVIGATION ---
+  const [currentView, setCurrentView] = useState<AppView>('landing');
+  
+  // --- EXISTING CHAT STATE ---
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
@@ -33,14 +42,12 @@ function App() {
     setIsLoading(true);
 
     try {
-      // Points to your Supabase Edge Function
       const apiUrl = import.meta.env.VITE_API_URL || 'https://kuayncnrchbyfmnejuda.supabase.co/functions/v1/dynamic-processor';
 
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // Your Supabase Anon Key acts as the VIP badge to bypass the 401 error
           'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1YXluY25yY2hieWZtbmVqdWRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNTgyNjksImV4cCI6MjA5MDgzNDI2OX0.6YxvqRlzXtwpNbd9OazSdKL-uTbg-Nwc89ZrQpJENQA'
         },
         body: JSON.stringify({
@@ -88,6 +95,22 @@ function App() {
     setMessages([]);
   };
 
+  // --- RENDERING LOGIC ---
+  
+  if (currentView === 'landing') {
+    return <LandingPage onGetStarted={() => setCurrentView('login')} />;
+  }
+
+  if (currentView === 'login') {
+    return (
+      <LoginPage 
+        onLogin={() => setCurrentView('chat')} 
+        onBack={() => setCurrentView('landing')} 
+      />
+    );
+  }
+
+  // If view is 'chat', render the main chatbot application
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       <ChatHeader
