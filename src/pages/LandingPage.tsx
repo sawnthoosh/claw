@@ -2,9 +2,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { legalData, Situation } from '../data/legalData';
-import { Shield, Scale, Home, ShoppingCart, UserCheck, Briefcase, ArrowRight, Info, FileText, ChevronRight } from 'lucide-react';
+import { Shield, Scale, MessageSquare, ChevronRight, LogIn, UserPlus, Info, FileText, UserCheck } from 'lucide-react';
 
-const icons: Record<string, any> = { Shield, Scale, Home, ShoppingCart, UserCheck, Briefcase };
+const icons: Record<string, any> = { Shield, Scale }; // Add Home, ShoppingCart, etc.
 
 export default function LandingPage() {
   const [selectedCategory, setSelectedCategory] = useState(legalData[0]);
@@ -12,99 +12,114 @@ export default function LandingPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Header */}
-      <div className="bg-blue-900 text-white py-16 px-6 text-center">
-        <h1 className="text-4xl font-bold mb-4">Select Your Situation</h1>
-        <p className="text-blue-200">Find factual legal guidance for common incidents</p>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Auth Header */}
+      <nav className="bg-white border-b border-gray-200 px-8 py-4 sticky top-0 z-50 flex justify-between items-center shadow-sm">
+        <div className="flex items-center gap-3">
+          <Scale className="text-blue-900" size={32} />
+          <span className="text-2xl font-black text-gray-900 tracking-tighter">CLAW PORTAL</span>
+        </div>
+        <div className="flex gap-4">
+          <button onClick={() => navigate('/signin')} className="flex items-center gap-2 text-gray-600 font-bold hover:text-blue-900 transition-colors">
+            <LogIn size={18} /> Sign In
+          </button>
+          <button onClick={() => navigate('/signup')} className="flex items-center gap-2 bg-blue-900 text-white px-6 py-2.5 rounded-full font-black shadow-lg hover:bg-blue-800 transition-all">
+            <UserPlus size={18} /> Register
+          </button>
+        </div>
+      </nav>
+
+      {/* Main Feature: Direct Chatbot Hero */}
+      <div className="bg-blue-900 text-white py-20 px-8 text-center relative overflow-hidden">
+        <div className="max-w-4xl mx-auto relative z-10">
+          <h1 className="text-5xl md:text-6xl font-black mb-6 tracking-tight">AI Legal Assistant</h1>
+          <p className="text-xl text-blue-200 mb-10 font-medium">Describe any incident—get immediate laws, rights, and action steps.</p>
+          <button 
+            onClick={() => navigate('/chat')}
+            className="inline-flex items-center gap-3 bg-white text-blue-900 px-12 py-5 rounded-full font-black text-2xl hover:scale-105 active:scale-95 transition-all shadow-2xl"
+          >
+            <MessageSquare size={32} /> START CHAT NOW
+          </button>
+        </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-12 flex flex-col lg:flex-row gap-8">
-        {/* Sidebar: 6 Categories */}
-        <div className="lg:w-1/3 space-y-4">
-          <h2 className="text-xl font-bold text-gray-800 mb-6 uppercase tracking-widest text-sm">Legal Categories</h2>
+      {/* Busy Informative Section */}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 max-w-7xl mx-auto w-full py-12 gap-8 px-6">
+        {/* Sidebar */}
+        <div className="lg:col-span-4 space-y-3">
+          <h2 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Legal Incident Directory</h2>
           {legalData.map((cat) => {
-            const Icon = icons[cat.icon];
+            const Icon = icons[cat.icon] || Shield;
             return (
               <button
                 key={cat.id}
                 onClick={() => { setSelectedCategory(cat); setSelectedSituation(null); }}
-                className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all ${selectedCategory.id === cat.id ? 'bg-blue-50 border-blue-500 shadow-md' : 'bg-white border-gray-100 hover:border-blue-200'}`}
+                className={`w-full flex items-center gap-4 p-5 rounded-3xl border-2 transition-all ${selectedCategory.id === cat.id ? 'bg-blue-50 border-blue-900 shadow-md' : 'bg-white border-transparent hover:border-gray-100'}`}
               >
-                <div className={`p-2 rounded-lg ${selectedCategory.id === cat.id ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                <div className={`p-2 rounded-xl ${selectedCategory.id === cat.id ? 'bg-blue-900 text-white' : 'bg-gray-100 text-gray-400'}`}>
                   <Icon size={24} />
                 </div>
                 <div className="text-left">
-                  <div className="font-bold text-gray-900">{cat.name}</div>
-                  <div className="text-xs text-gray-500 line-clamp-1">{cat.description}</div>
+                  <div className="font-black text-gray-900">{cat.name}</div>
+                  <div className="text-xs font-bold text-gray-400">{cat.description}</div>
                 </div>
               </button>
             );
           })}
         </div>
 
-        {/* Content Area: 4 Situations & Details */}
-        <div className="lg:w-2/3">
+        {/* Content */}
+        <div className="lg:col-span-8">
           {!selectedSituation ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {selectedCategory.situations.map((sit) => (
                 <button
                   key={sit.id}
                   onClick={() => setSelectedSituation(sit)}
-                  className="p-6 bg-white border border-gray-200 rounded-2xl text-left hover:shadow-lg transition-shadow group"
+                  className="p-6 bg-white border border-gray-100 rounded-[2rem] text-left hover:border-blue-900 hover:shadow-xl transition-all"
                 >
-                  <h3 className="text-lg font-bold text-blue-900 mb-2 flex items-center justify-between">
-                    {sit.title} <ChevronRight className="group-hover:translate-x-1 transition-transform" />
-                  </h3>
-                  <p className="text-gray-600 text-sm">{sit.info}</p>
+                  <h3 className="text-xl font-black text-gray-900 mb-2">{sit.title}</h3>
+                  <p className="text-gray-500 font-bold text-sm italic mb-4">"{sit.info}"</p>
+                  <div className="text-blue-900 font-black text-xs uppercase tracking-widest flex items-center">
+                    Action Plan <ChevronRight size={16} />
+                  </div>
                 </button>
               ))}
             </div>
           ) : (
-            /* Situation Detail View */
-            <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
-              <button onClick={() => setSelectedSituation(null)} className="text-blue-600 mb-6 hover:underline flex items-center gap-2">
-                ← Back to {selectedCategory.name}
-              </button>
-              
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">{selectedSituation.title}</h2>
-              <p className="text-gray-700 bg-gray-50 p-4 rounded-lg italic mb-8 border-l-4 border-blue-500">"{selectedSituation.info}"</p>
-
-              <div className="space-y-8">
-                <div>
-                  <h4 className="flex items-center gap-2 font-bold text-blue-900 mb-2"><Scale size={20}/> Applicable Law</h4>
-                  <p className="text-gray-800">{selectedSituation.law}</p>
+            <div className="bg-white rounded-[2.5rem] p-10 shadow-2xl border border-gray-50">
+              <button onClick={() => setSelectedSituation(null)} className="text-gray-400 font-black text-xs uppercase mb-6 tracking-widest">← Back</button>
+              <h2 className="text-4xl font-black text-gray-900 mb-6">{selectedSituation.title}</h2>
+              <div className="grid md:grid-cols-2 gap-8">
+                <div className="space-y-6">
+                  <DetailSection title="Applicable Law" icon={<Scale size={20}/>} text={selectedSituation.law} />
+                  <DetailSection title="Your Rights" icon={<UserCheck size={20}/>} list={selectedSituation.rights} />
                 </div>
-                
-                <div className="grid md:grid-cols-2 gap-8">
-                  <div>
-                    <h4 className="flex items-center gap-2 font-bold text-blue-900 mb-2"><UserCheck size={20}/> Your Rights</h4>
-                    <ul className="list-disc pl-5 space-y-1 text-gray-700">
-                      {selectedSituation.rights.map((r, i) => <li key={i}>{r}</li>)}
-                    </ul>
-                  </div>
-                  <div>
-                    <h4 className="flex items-center gap-2 font-bold text-blue-900 mb-2"><Info size={20}/> Steps to Take</h4>
-                    <ol className="list-decimal pl-5 space-y-1 text-gray-700">
-                      {selectedSituation.steps.map((s, i) => <li key={i}>{s}</li>)}
-                    </ol>
-                  </div>
-                </div>
-
-                <div className="bg-blue-900 text-white p-6 rounded-xl flex flex-col md:flex-row justify-between items-center gap-4">
-                  <div>
-                    <h4 className="font-bold flex items-center gap-2 mb-1"><FileText size={20}/> Need personalized help?</h4>
-                    <p className="text-blue-200 text-sm">Ask our AI Legal Assistant for a full step-by-step guide.</p>
-                  </div>
-                  <button onClick={() => navigate('/chat')} className="bg-white text-blue-900 px-6 py-2 rounded-full font-bold hover:bg-blue-50 transition-colors">
-                    Ask Chatbot
-                  </button>
+                <div className="space-y-6">
+                  <DetailSection title="Steps" icon={<Info size={20}/>} list={selectedSituation.steps} />
+                  <DetailSection title="Docs" icon={<FileText size={20}/>} list={selectedSituation.documents} />
                 </div>
               </div>
             </div>
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function DetailSection({ title, icon, text, list }: any) {
+  return (
+    <div className="space-y-2">
+      <h4 className="flex items-center gap-2 text-xs font-black text-blue-900 uppercase tracking-widest">{icon} {title}</h4>
+      {text && <p className="font-bold text-gray-700 bg-gray-50 p-3 rounded-xl">{text}</p>}
+      {list && (
+        <ul className="space-y-2">
+          {list.map((item: string, i: number) => (
+            <li key={i} className="text-sm font-bold text-gray-600 bg-gray-50 p-2 rounded-lg border-l-4 border-blue-900">{item}</li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
