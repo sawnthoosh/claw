@@ -1,68 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
-import { TopicCard } from '../components/TopicCard';
-import { Loader2, ArrowLeft, AlertCircle } from 'lucide-react';
-import { LegalTopic, Category } from '../lib/supabase';
+import { categories, legalTopics } from '../data/legalData';
+import { ArrowLeft, BookOpen, Clock, AlertCircle } from 'lucide-react';
 
 export default function CategoryView() {
   const { slug } = useParams<{ slug: string }>();
-  const [category, setCategory] = useState<Category | null>(null);
-  const [topics, setTopics] = useState<LegalTopic[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  
+  // Find the exact category from our local data
+  const category = categories.find(c => c.slug === slug);
+  
+  // Filter the topics that belong to this category
+  const topics = legalTopics.filter(t => t.categorySlug === slug);
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        setLoading(true);
-        // 1. Fetch the category details based on the slug in the URL
-        const { data: categoryData, error: categoryError } = await supabase
-          .from('categories')
-          .select('*')
-          .eq('slug', slug)
-          .single();
-
-        if (categoryError) throw categoryError;
-        setCategory(categoryData);
-
-        // 2. Fetch the legal topics that belong to this category
-        if (categoryData) {
-          const { data: topicsData, error: topicsError } = await supabase
-            .from('legal_topics')
-            .select('*')
-            .eq('category_id', categoryData.id)
-            .eq('is_published', true);
-
-          if (topicsError) throw topicsError;
-          setTopics(topicsData || []);
-        }
-      } catch (err: any) {
-        console.error("Error fetching data:", err.message);
-        setError("Could not load topics for this category.");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    if (slug) {
-      fetchData();
-    }
-  }, [slug]);
-
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-blue-900">
-        <Loader2 className="animate-spin mb-4" size={48} />
-      </div>
-    );
-  }
-
-  if (error || !category) {
+  if (!category) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-12 text-center">
         <AlertCircle size={48} className="mx-auto text-red-600 mb-4" />
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">{error || "Category not found"}</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">Category not found</h2>
         <Link to="/topics" className="text-blue-600 hover:underline">Return to Topics Directory</Link>
       </div>
     );
@@ -86,12 +40,26 @@ export default function CategoryView() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {topics.map((topic) => (
-            <div key={topic.id} className="h-full">
-              {/* Using the TopicCard component you already have in src/components */}
-              <TopicCard 
-                topic={topic} 
-                onClick={() => alert(`In the next step, this will navigate to: /article/${topic.slug}`)} 
-              />
+            <div key={topic.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:border-blue-500 transition-colors flex flex-col h-full">
+              <h3 className="text-xl font-bold text-gray-900 mb-2">{topic.title}</h3>
+              <p className="text-gray-600 mb-6 flex-grow">{topic.summary}</p>
+              
+              <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
+                <div className="flex gap-4 text-sm text-gray-500">
+                  <span className="flex items-center gap-1">
+                    <BookOpen size={16} /> {topic.difficulty}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock size={16} /> {topic.timeToRead}
+                  </span>
+                </div>
+                <button 
+                  onClick={() => alert(`This would open the full text for: ${topic.title}`)}
+                  className="text-blue-600 font-semibold hover:text-blue-800"
+                >
+                  Read Article &rarr;
+                </button>
+              </div>
             </div>
           ))}
         </div>
