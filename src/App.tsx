@@ -38,15 +38,15 @@ function App() {
     setIsLoading(true);
 
     try {
-      // 1. Get the key directly from Vercel's environment variables
+      // Get the key from environment variables
       const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
       
       if (!apiKey) {
-        throw new Error("Missing VITE_GEMINI_API_KEY in Vercel settings!");
+        throw new Error("Missing VITE_GEMINI_API_KEY environment variable!");
       }
 
-      // 2. Call Google Gemini directly!
-      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+      // CORRECTED: Use a valid model name (gemini-1.5-flash)
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash:generateContent?key=${apiKey}`;
 
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -61,7 +61,8 @@ function App() {
       });
 
       if (!response.ok) {
-        throw new Error(`Gemini API error: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || `Gemini API error: ${response.status}`);
       }
 
       const data = await response.json();
