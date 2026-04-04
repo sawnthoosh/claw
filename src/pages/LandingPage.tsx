@@ -1,10 +1,9 @@
-// src/pages/LandingPage.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { legalData, Situation } from '../data/legalData';
 import { Shield, Scale, MessageSquare, ChevronRight, LogIn, UserPlus, Info, FileText, UserCheck } from 'lucide-react';
 
-const icons: Record<string, any> = { Shield, Scale }; // Add Home, ShoppingCart, etc.
+const icons: Record<string, any> = { Shield, Scale }; 
 
 export default function LandingPage() {
   const [selectedCategory, setSelectedCategory] = useState(legalData[0]);
@@ -13,7 +12,6 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Auth Header */}
       <nav className="bg-white border-b border-gray-200 px-8 py-4 sticky top-0 z-50 flex justify-between items-center shadow-sm">
         <div className="flex items-center gap-3">
           <Scale className="text-blue-900" size={32} />
@@ -29,11 +27,10 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* Main Feature: Direct Chatbot Hero */}
       <div className="bg-blue-900 text-white py-20 px-8 text-center relative overflow-hidden">
         <div className="max-w-4xl mx-auto relative z-10">
-          <h1 className="text-5xl md:text-6xl font-black mb-6 tracking-tight">AI Legal Assistant</h1>
-          <p className="text-xl text-blue-200 mb-10 font-medium">Describe any incident—get immediate laws, rights, and action steps.</p>
+          <h1 className="text-5xl md:text-6xl font-black mb-6 tracking-tight uppercase">Legal AI Assistant</h1>
+          <p className="text-xl text-blue-200 mb-10 font-medium">Instant guidance on laws, rights, and actionable steps for any incident.</p>
           <button 
             onClick={() => navigate('/chat')}
             className="inline-flex items-center gap-3 bg-white text-blue-900 px-12 py-5 rounded-full font-black text-2xl hover:scale-105 active:scale-95 transition-all shadow-2xl"
@@ -43,11 +40,9 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* Busy Informative Section */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 max-w-7xl mx-auto w-full py-12 gap-8 px-6">
-        {/* Sidebar */}
         <div className="lg:col-span-4 space-y-3">
-          <h2 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Legal Incident Directory</h2>
+          <h2 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Legal Directory</h2>
           {legalData.map((cat) => {
             const Icon = icons[cat.icon] || Shield;
             return (
@@ -59,16 +54,12 @@ export default function LandingPage() {
                 <div className={`p-2 rounded-xl ${selectedCategory.id === cat.id ? 'bg-blue-900 text-white' : 'bg-gray-100 text-gray-400'}`}>
                   <Icon size={24} />
                 </div>
-                <div className="text-left">
-                  <div className="font-black text-gray-900">{cat.name}</div>
-                  <div className="text-xs font-bold text-gray-400">{cat.description}</div>
-                </div>
+                <div className="text-left font-black text-gray-900">{cat.name}</div>
               </button>
             );
           })}
         </div>
 
-        {/* Content */}
         <div className="lg:col-span-8">
           {!selectedSituation ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -80,9 +71,7 @@ export default function LandingPage() {
                 >
                   <h3 className="text-xl font-black text-gray-900 mb-2">{sit.title}</h3>
                   <p className="text-gray-500 font-bold text-sm italic mb-4">"{sit.info}"</p>
-                  <div className="text-blue-900 font-black text-xs uppercase tracking-widest flex items-center">
-                    Action Plan <ChevronRight size={16} />
-                  </div>
+                  <div className="text-blue-900 font-black text-xs uppercase tracking-widest flex items-center">Action Plan <ChevronRight size={16} /></div>
                 </button>
               ))}
             </div>
@@ -92,34 +81,30 @@ export default function LandingPage() {
               <h2 className="text-4xl font-black text-gray-900 mb-6">{selectedSituation.title}</h2>
               <div className="grid md:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                  <DetailSection title="Applicable Law" icon={<Scale size={20}/>} text={selectedSituation.law} />
-                  <DetailSection title="Your Rights" icon={<UserCheck size={20}/>} list={selectedSituation.rights} />
+                  <div className="space-y-2">
+                    <h4 className="flex items-center gap-2 text-xs font-black text-blue-900 uppercase tracking-widest"><Scale size={18}/> Applicable Law</h4>
+                    <p className="font-bold text-gray-700 bg-gray-50 p-3 rounded-xl">{selectedSituation.law}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="flex items-center gap-2 text-xs font-black text-blue-900 uppercase tracking-widest"><UserCheck size={18}/> Your Rights</h4>
+                    <ul className="space-y-2">
+                      {selectedSituation.rights.map((r, i) => <li key={i} className="text-sm font-bold text-gray-600 bg-gray-50 p-2 rounded-lg border-l-4 border-blue-900">{r}</li>)}
+                    </ul>
+                  </div>
                 </div>
                 <div className="space-y-6">
-                  <DetailSection title="Steps" icon={<Info size={20}/>} list={selectedSituation.steps} />
-                  <DetailSection title="Docs" icon={<FileText size={20}/>} list={selectedSituation.documents} />
+                  <div className="space-y-2">
+                    <h4 className="flex items-center gap-2 text-xs font-black text-blue-900 uppercase tracking-widest"><Info size={18}/> Steps</h4>
+                    <ul className="space-y-2">
+                      {selectedSituation.steps.map((s, i) => <li key={i} className="text-sm font-bold text-gray-600 bg-gray-50 p-2 rounded-lg">{i+1}. {s}</li>)}
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>
           )}
         </div>
       </div>
-    </div>
-  );
-}
-
-function DetailSection({ title, icon, text, list }: any) {
-  return (
-    <div className="space-y-2">
-      <h4 className="flex items-center gap-2 text-xs font-black text-blue-900 uppercase tracking-widest">{icon} {title}</h4>
-      {text && <p className="font-bold text-gray-700 bg-gray-50 p-3 rounded-xl">{text}</p>}
-      {list && (
-        <ul className="space-y-2">
-          {list.map((item: string, i: number) => (
-            <li key={i} className="text-sm font-bold text-gray-600 bg-gray-50 p-2 rounded-lg border-l-4 border-blue-900">{item}</li>
-          ))}
-        </ul>
-      )}
     </div>
   );
 }
