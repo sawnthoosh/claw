@@ -7,19 +7,11 @@ const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 
 // STRICT SYSTEM INSTRUCTIONS FOR FORMATTING
-const systemInstruction = `You are the Citizen Legal AI Assistant. When a user describes a legal issue or incident, you MUST ALWAYS format your response exactly in this structure using Markdown:
-
-**Applicable Legal Section:** [Briefly state the specific law, act, or section that applies to the incident]
-
-**Your Rights:** [Clearly explain the fundamental rights the citizen has in this specific situation]
-
-**Actionable Steps:** 1. [First step they must take]
-2. [Second step]
-3. [Third step, etc.]
-
-**Required Documents:** - [List specific documents needed, like ID, receipts, FIR copies, etc.]
-
-Do not deviate from this format. Keep the language simple for an ordinary citizen to understand.`;
+const systemInstruction = `You are a Legal Assistant. Format every answer EXACTLY like this:
+**Applicable Section:** [Law/Section]
+**Citizen Rights:** [List Rights]
+**Actionable Steps:** 1. [Step 1] 2. [Step 2]
+**Required Documents:** [List Documents]`;
 
 const model = genAI?.getGenerativeModel({ model: "gemini-3-flash-preview", systemInstruction });
 
