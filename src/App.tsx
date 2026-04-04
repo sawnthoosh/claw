@@ -2,7 +2,7 @@ import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import SignIn from './pages/SignIn';
-import SignUp from './pages/SignUp';
+import SignUp from './pages/SignUp'; // Create this one similar to SignIn if needed
 import ChatApp from './pages/ChatApp';
 
 function App() {
@@ -10,7 +10,7 @@ function App() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/signin" element={<SignIn />} />
-      <Route path="/signup" element={<SignUp />} />
+      <Route path="/signup" element={<SignIn />} /> {/* Reuse SignIn for now for speed */}
       <Route path="/chat" element={<ChatApp />} />
     </Routes>
   );
