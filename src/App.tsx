@@ -33,13 +33,15 @@ function App() {
     setIsLoading(true);
 
     try {
-      // 🚀 Hardcoded to your exact Supabase Function (dynamic-processor)
+      // Points to your Supabase Edge Function
       const apiUrl = import.meta.env.VITE_API_URL || 'https://kuayncnrchbyfmnejuda.supabase.co/functions/v1/dynamic-processor';
 
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          // Your Supabase Anon Key acts as the VIP badge to bypass the 401 error
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1YXluY25yY2hieWZtbmVqdWRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNTgyNjksImV4cCI6MjA5MDgzNDI2OX0.6YxvqRlzXtwpNbd9OazSdKL-uTbg-Nwc89ZrQpJENQA'
         },
         body: JSON.stringify({
           messages: [
@@ -69,7 +71,6 @@ function App() {
     } catch (error: any) {
       console.error('Error sending message:', error);
 
-      // 🛑 Tells you exactly what failed instead of a generic python error
       const errorMsg: Message = {
         id: (Date.now() + 1).toString(),
         content: `Connection Error: ${error.message}. Please check your Supabase/Vercel configuration.`,
