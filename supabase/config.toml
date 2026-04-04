@@ -1,0 +1,2 @@
+[functions.dynamic-processor]
+verify_jwt = false
