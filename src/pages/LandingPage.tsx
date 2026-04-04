@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { legalData, Situation } from '../data/legalData';
-import { Shield, Scale, MessageSquare, ChevronRight, LogIn, UserPlus, Info, FileText, UserCheck } from 'lucide-react';
+import { Shield, Scale, MessageSquare, ChevronRight, LogIn, UserPlus, Info, FileText, UserCheck, Home, ShoppingCart, Briefcase } from 'lucide-react';
 
-const icons: Record<string, any> = { Shield, Scale }; 
+const icons: Record<string, any> = { Shield, Scale, Home, ShoppingCart, UserCheck, Briefcase }; 
 
 export default function LandingPage() {
   const [selectedCategory, setSelectedCategory] = useState(legalData[0]);
@@ -12,6 +12,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* 1. AUTH HEADER */}
       <nav className="bg-white border-b border-gray-200 px-8 py-4 sticky top-0 z-50 flex justify-between items-center shadow-sm">
         <div className="flex items-center gap-3">
           <Scale className="text-blue-900" size={32} />
@@ -27,10 +28,11 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      <div className="bg-blue-900 text-white py-20 px-8 text-center relative overflow-hidden">
+      {/* 2. DIRECT CHATBOT HERO (The Main Feature) */}
+      <div className="bg-blue-900 text-white py-16 px-8 text-center relative overflow-hidden">
         <div className="max-w-4xl mx-auto relative z-10">
-          <h1 className="text-5xl md:text-6xl font-black mb-6 tracking-tight uppercase">Legal AI Assistant</h1>
-          <p className="text-xl text-blue-200 mb-10 font-medium">Instant guidance on laws, rights, and actionable steps for any incident.</p>
+          <h1 className="text-5xl font-black mb-6 tracking-tight uppercase">Legal AI Assistant</h1>
+          <p className="text-xl text-blue-200 mb-8 font-medium">Describe any incident to get immediate laws, rights, and action steps.</p>
           <button 
             onClick={() => navigate('/chat')}
             className="inline-flex items-center gap-3 bg-white text-blue-900 px-12 py-5 rounded-full font-black text-2xl hover:scale-105 active:scale-95 transition-all shadow-2xl"
@@ -40,9 +42,11 @@ export default function LandingPage() {
         </div>
       </div>
 
+      {/* 3. CATEGORIES & SITUATIONS (The Informative Section) */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 max-w-7xl mx-auto w-full py-12 gap-8 px-6">
+        {/* Left Sidebar: 6 Categories */}
         <div className="lg:col-span-4 space-y-3">
-          <h2 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Legal Directory</h2>
+          <h2 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Explore Categories</h2>
           {legalData.map((cat) => {
             const Icon = icons[cat.icon] || Shield;
             return (
@@ -60,6 +64,7 @@ export default function LandingPage() {
           })}
         </div>
 
+        {/* Right Content: 4 Situations per Category */}
         <div className="lg:col-span-8">
           {!selectedSituation ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -67,17 +72,19 @@ export default function LandingPage() {
                 <button
                   key={sit.id}
                   onClick={() => setSelectedSituation(sit)}
-                  className="p-6 bg-white border border-gray-100 rounded-[2rem] text-left hover:border-blue-900 hover:shadow-xl transition-all"
+                  className="p-6 bg-white border border-gray-100 rounded-[2rem] text-left hover:border-blue-900 hover:shadow-xl transition-all h-full flex flex-col justify-between"
                 >
-                  <h3 className="text-xl font-black text-gray-900 mb-2">{sit.title}</h3>
-                  <p className="text-gray-500 font-bold text-sm italic mb-4">"{sit.info}"</p>
+                  <div>
+                    <h3 className="text-xl font-black text-gray-900 mb-2">{sit.title}</h3>
+                    <p className="text-gray-500 font-bold text-sm italic mb-4">"{sit.info}"</p>
+                  </div>
                   <div className="text-blue-900 font-black text-xs uppercase tracking-widest flex items-center">Action Plan <ChevronRight size={16} /></div>
                 </button>
               ))}
             </div>
           ) : (
             <div className="bg-white rounded-[2.5rem] p-10 shadow-2xl border border-gray-50">
-              <button onClick={() => setSelectedSituation(null)} className="text-gray-400 font-black text-xs uppercase mb-6 tracking-widest">← Back</button>
+              <button onClick={() => setSelectedSituation(null)} className="text-gray-400 font-black text-xs uppercase mb-6 tracking-widest hover:text-blue-900">← Back</button>
               <h2 className="text-4xl font-black text-gray-900 mb-6">{selectedSituation.title}</h2>
               <div className="grid md:grid-cols-2 gap-8">
                 <div className="space-y-6">
