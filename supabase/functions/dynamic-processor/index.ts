@@ -7,50 +7,56 @@ const corsHeaders = {
 };
 
 Deno.serve(async (req) => {
-  // 1. Handle CORS Preflight
+  // 1. Always say YES to CORS preflight checks
   if (req.method === "OPTIONS") {
-    return new Response(null, { status: 200, headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
     const { messages } = await req.json();
     const query = messages[messages.length - 1].content;
 
-    // 2. Get Vector from HuggingFace
-    const hfRes = await fetch("https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${Deno.env.get("HUGGINGFACE_API_KEY")}` },
-      body: JSON.stringify({ inputs: query }),
-    });
-    const vector = await hfRes.json();
+    // 2. Get the Gemini Key
+    const apiKey = Deno.env.get("GEMINI_API_KEY");
+    
+    // IF THE KEY IS MISSING, SEND A MESSAGE TO THE CHAT UI (No 500 Error!)
+    if (!apiKey) {
+      return new Response(JSON.stringify({ 
+        content: "🚨 ERROR: I am missing my GEMINI_API_KEY. Please add it to the Supabase Edge Function Secrets!" 
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
-    // 3. Query your Pinecone Data
-    const pcRes = await fetch(`${Deno.env.get("PINECONE_HOST")}/query`, {
-      method: "POST",
-      headers: { "Api-Key": Deno.env.get("PINECONE_API_KEY")!, "Content-Type": "application/json" },
-      body: JSON.stringify({ vector, topK: 3, includeMetadata: true }),
-    });
-    const pcData = await pcRes.json();
-    const context = pcData.matches ? pcData.matches.map((m: any) => m.metadata.text).join("\n\n") : "No specific legal context found.";
-
-    // 4. Get Smart Answer from Gemini
-    const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${Deno.env.get("GEMINI_API_KEY")}`, {
+    // 3. Ask Gemini directly
+    const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ contents: [{ parts: [{ text: `Use this legal context to answer the query simply: \n${context}\n\nQuery: ${query}` }] }] }),
+      body: JSON.stringify({ 
+        contents: [{ 
+            parts: [{ text: `You are CLAW, an expert AI legal assistant. Answer this legal query simply and professionally: \n\nQuery: ${query}` }] 
+        }] 
+      }),
     });
+
     const geminiData = await geminiRes.json();
+
+    // IF GEMINI FAILS, SEND THE REASON TO THE CHAT UI
+    if (geminiData.error) {
+        return new Response(JSON.stringify({ 
+            content: `🚨 GEMINI API ERROR: ${geminiData.error.message}` 
+        }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const aiAnswer = geminiData.candidates[0].content.parts[0].text;
 
-    // 5. Send back to your website
+    // 4. Send the successful answer back
     return new Response(JSON.stringify({ content: aiAnswer }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
 
   } catch (err: any) {
-    return new Response(JSON.stringify({ error: err.message }), { 
-        status: 500, 
-        headers: { ...corsHeaders, "Content-Type": "application/json" } 
-    });
+    // IF THE CODE CRASHES, SEND THE REASON TO THE CHAT UI
+    return new Response(JSON.stringify({ 
+        content: `🚨 FATAL CRASH: ${err.message}` 
+    }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
