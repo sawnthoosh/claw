@@ -1,10 +1,9 @@
-// src/App.tsx
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
-import ChatApp from './ChatApp'; // Adjust path if needed
+import ChatApp from './pages/ChatApp';
 
 function App() {
   return (
