@@ -33,8 +33,8 @@ function App() {
     setIsLoading(true);
 
     try {
-      // Pointing to your new local Python FastAPI backend
-     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/chat';
+      // 🚀 Hardcoded to your exact Supabase Function (dynamic-processor)
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://kuayncnrchbyfmnejuda.supabase.co/functions/v1/dynamic-processor';
 
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -66,13 +66,13 @@ function App() {
       };
 
       setMessages((prev) => [...prev, assistantMsg]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending message:', error);
 
+      // 🛑 Tells you exactly what failed instead of a generic python error
       const errorMsg: Message = {
         id: (Date.now() + 1).toString(),
-        content:
-          'Sorry, I encountered an error. Make sure your Python backend is running on http://localhost:8000.',
+        content: `Connection Error: ${error.message}. Please check your Supabase/Vercel configuration.`,
         isUser: false,
         timestamp: new Date(),
       };
