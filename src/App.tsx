@@ -13,14 +13,10 @@ interface Message {
   timestamp: Date;
 }
 
-// Define the three possible screens in our app
 type AppView = 'landing' | 'login' | 'chat';
 
 function App() {
-  // --- NEW STATE FOR NAVIGATION ---
   const [currentView, setCurrentView] = useState<AppView>('landing');
-  
-  // --- EXISTING CHAT STATE ---
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
@@ -42,34 +38,41 @@ function App() {
     setIsLoading(true);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://kuayncnrchbyfmnejuda.supabase.co/functions/v1/dynamic-processor';
+      // 1. Get the key directly from Vercel's environment variables
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      
+      if (!apiKey) {
+        throw new Error("Missing VITE_GEMINI_API_KEY in Vercel settings!");
+      }
+
+      // 2. Call Google Gemini directly!
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1YXluY25yY2hieWZtbmVqdWRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNTgyNjksImV4cCI6MjA5MDgzNDI2OX0.6YxvqRlzXtwpNbd9OazSdKL-uTbg-Nwc89ZrQpJENQA'
         },
         body: JSON.stringify({
-          messages: [
-            ...messagesRef.current.map((msg) => ({
-              role: msg.isUser ? 'user' : 'assistant',
-              content: msg.content,
-            })),
-            { role: 'user', content: userMessage },
-          ],
+          contents: [{
+            parts: [{ text: `You are CLAW, an expert AI legal assistant. Answer this user query clearly and professionally: \n\nQuery: ${userMessage}` }]
+          }]
         }),
       });
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
+        throw new Error(`Gemini API error: ${response.status}`);
       }
 
       const data = await response.json();
+      
+      if (data.error) {
+         throw new Error(data.error.message);
+      }
 
       const assistantMsg: Message = {
         id: (Date.now() + 1).toString(),
-        content: data.content || 'Sorry, I could not process your request. Please try again.',
+        content: data.candidates[0].content.parts[0].text || 'Sorry, I could not generate a response.',
         isUser: false,
         timestamp: new Date(),
       };
@@ -80,7 +83,7 @@ function App() {
 
       const errorMsg: Message = {
         id: (Date.now() + 1).toString(),
-        content: `Connection Error: ${error.message}. Please check your Supabase/Vercel configuration.`,
+        content: `🚨 ERROR: ${error.message}`,
         isUser: false,
         timestamp: new Date(),
       };
@@ -95,8 +98,6 @@ function App() {
     setMessages([]);
   };
 
-  // --- RENDERING LOGIC ---
-  
   if (currentView === 'landing') {
     return <LandingPage onGetStarted={() => setCurrentView('login')} />;
   }
@@ -110,12 +111,9 @@ function App() {
     );
   }
 
-  // If view is 'chat', render the main chatbot application
   return (
     <div className="h-screen flex flex-col bg-gray-50">
-      <ChatHeader
-        onMenuClick={() => setIsInfoOpen(true)}
-      />
+      <ChatHeader onMenuClick={() => setIsInfoOpen(true)} />
 
       <main className="flex-1 overflow-hidden flex flex-col">
         <div className="flex-1 overflow-y-auto">
@@ -127,7 +125,6 @@ function App() {
         <div className="bg-white border-t border-gray-200">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <ChatInput onSendMessage={sendMessage} disabled={isLoading} />
-
             {messages.length > 0 && (
               <div className="text-center mt-3">
                 <button
